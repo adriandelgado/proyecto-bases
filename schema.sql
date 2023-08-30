@@ -178,6 +178,8 @@ FROM
 JOIN
     USUARIO U ON R.id_usuario = U.email;
 
+CREATE USER 'reseusu'@'localhost' IDENTIFIED BY 'reseusu123';
+GRANT SELECT ON tripAdvisor.ReservasUsuarioView TO 'reseusu'@'localhost';
 
 DELIMITER //
 
