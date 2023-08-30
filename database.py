@@ -1,6 +1,7 @@
+from typing import Any
 import mysql.connector.pooling
 
-db_config = {
+db_config: Any = {
     "host": "localhost",
     "user": "root",
     "password": "admin",

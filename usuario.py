@@ -20,14 +20,9 @@ class UsuarioModificado:
 
 def crear_usuario(nuevo_usuario: Usuario):
     connection = connection_pool.get_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(prepared=True)
     cursor.execute(
-        """INSERT INTO USUARIO (
-            email,
-            nombres,
-            apellidos,
-            contraseña
-        ) VALUES (%s, %s, %s, %s)""",
+        "CALL InsertUsuario(%s, %s, %s, %s)",
         (
             nuevo_usuario.email,
             nuevo_usuario.nombres,
@@ -72,12 +67,12 @@ def editar_usuario(email: str, usuario_modificado: UsuarioModificado):
     connection = connection_pool.get_connection()
     cursor = connection.cursor(prepared=True)
 
-    update_query = "UPDATE USUARIO SET nombres = %s, apellidos = %s, contraseña = %s WHERE email = %s"
+    update_query = "CALL UpdateUsuario(%s, %s, %s, %s)"
     values = (
+        email,
         usuario_modificado.nombres,
         usuario_modificado.apellidos,
         usuario_modificado.contraseña,
-        email,
     )
 
     cursor.execute(update_query, values)
@@ -89,9 +84,9 @@ def editar_usuario(email: str, usuario_modificado: UsuarioModificado):
 
 def borrar_usuario(email: str):
     connection = connection_pool.get_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(prepared=True)
 
-    delete_query = "DELETE FROM USUARIO WHERE email = %s"
+    delete_query = "CALL DeleteUsuario(%s)"
     values = (email,)
 
     cursor.execute(delete_query, values)

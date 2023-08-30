@@ -6,11 +6,59 @@ USE tripAdvisor;
 
 -- Crear la tabla USUARIO
 CREATE TABLE USUARIO (
-    email CHAR(150) PRIMARY KEY,
-    nombres CHAR(150),
-    apellidos CHAR(150),
-    contraseña CHAR(25)
+    email VARCHAR(150) PRIMARY KEY,
+    nombres VARCHAR(150),
+    apellidos VARCHAR(150),
+    contraseña VARCHAR(150)
 );
+
+DELIMITER //
+CREATE PROCEDURE InsertUsuario(
+    IN p_email VARCHAR(150),
+    IN p_nombres VARCHAR(150),
+    IN p_apellidos VARCHAR(150),
+    IN p_contrasena VARCHAR(150)
+)
+BEGIN
+    INSERT INTO USUARIO(email, nombres, apellidos, contraseña)
+    VALUES (p_email, p_nombres, p_apellidos, p_contrasena);
+END;
+//
+
+CREATE PROCEDURE UpdateUsuario(
+    IN p_email VARCHAR(150),
+    IN p_nombres VARCHAR(150),
+    IN p_apellidos VARCHAR(150),
+    IN p_contrasena VARCHAR(150)
+)
+BEGIN
+    UPDATE USUARIO
+    SET nombres = p_nombres,
+        apellidos = p_apellidos,
+        contraseña = p_contrasena
+    WHERE email = p_email;
+END;
+//
+
+CREATE PROCEDURE DeleteUsuario(
+    IN p_email VARCHAR(150)
+)
+BEGIN
+    START TRANSACTION;
+    DELETE FROM OPINION
+    WHERE autor = p_email;
+    DELETE FROM LIKES
+    WHERE usuario_id = p_email;
+    DELETE FROM RESERVAS
+    WHERE id_usuario = p_email;
+    DELETE FROM VUELO
+    WHERE usuario = p_email;
+    DELETE FROM USUARIO
+    WHERE email = p_email;
+    COMMIT;
+END;
+//
+DELIMITER ;
 
 INSERT INTO USUARIO (email, nombres, apellidos, contraseña)
 VALUES
@@ -33,14 +81,61 @@ VALUES
 
 CREATE TABLE VUELO (
     numero INT PRIMARY KEY,
-    areolinea CHAR(100),
-    destino CHAR(100),
-    origen CHAR(100),
-    fechaPartida CHAR(50),
-    fechaLlegada CHAR(50),
-    usuario CHAR(150),
+    areolinea VARCHAR(100),
+    destino VARCHAR(100),
+    origen VARCHAR(100),
+    fechaPartida VARCHAR(50),
+    fechaLlegada VARCHAR(50),
+    usuario VARCHAR(150),
     FOREIGN KEY (usuario) REFERENCES USUARIO(email)
 );
+
+DELIMITER //
+CREATE PROCEDURE InsertVuelo(
+    IN p_numero INT,
+    IN p_aerolinea VARCHAR(100),
+    IN p_destino VARCHAR(100),
+    IN p_origen VARCHAR(100),
+    IN p_fechaPartida VARCHAR(50),
+    IN p_fechaLlegada VARCHAR(50),
+    IN p_usuario VARCHAR(150)
+)
+BEGIN
+    INSERT INTO VUELO(numero, areolinea, destino, origen, fechaPartida, fechaLlegada, usuario)
+    VALUES (p_numero, p_aerolinea, p_destino, p_origen, p_fechaPartida, p_fechaLlegada, p_usuario);
+END;
+//
+
+CREATE PROCEDURE UpdateVuelo(
+    IN p_numero INT,
+    IN p_aerolinea VARCHAR(100),
+    IN p_destino VARCHAR(100),
+    IN p_origen VARCHAR(100),
+    IN p_fechaPartida VARCHAR(50),
+    IN p_fechaLlegada VARCHAR(50),
+    IN p_usuario VARCHAR(150)
+)
+BEGIN
+    UPDATE VUELO
+    SET areolinea = p_aerolinea,
+        destino = p_destino,
+        origen = p_origen,
+        fechaPartida = p_fechaPartida,
+        fechaLlegada = p_fechaLlegada,
+        usuario = p_usuario
+    WHERE numero = p_numero;
+END;
+//
+
+CREATE PROCEDURE DeleteVuelo(
+    IN p_numero INT
+)
+BEGIN
+    DELETE FROM VUELO
+    WHERE numero = p_numero;
+END;
+//
+DELIMITER ;
 
 
 INSERT INTO VUELO (numero, areolinea, destino, origen, fechaPartida, fechaLlegada, usuario)
@@ -61,69 +156,95 @@ VALUES
     (29, 'Copa Airlines', 'Ciudad de Panamá', 'Ciudad de México', '2023-08-16', '2023-08-20', 'jrodriguez@gmail.com'),
     (57, 'Avianca', 'Bogotá', 'Lima', '2023-08-17', '2023-08-21', 'mlopez@hotmail.com');
 
-
-
-
-
 CREATE TABLE RESERVAS (
-    id CHAR(25) PRIMARY KEY,
-    fecha CHAR(50),
-    nombres CHAR(150)
+    id VARCHAR(25) PRIMARY KEY,
+    fecha VARCHAR(50),
+    nombres VARCHAR(150),
+    id_usuario VARCHAR(150),
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(email)
 );
 
+CREATE VIEW ReservasUsuarioView AS
+SELECT
+    R.id AS reserva_id,
+    R.fecha,
+    R.nombres AS reserva_nombres,
+    R.id_usuario,
+    U.nombres AS usuario_nombres,
+    U.apellidos,
+    U.contraseña
+FROM
+    RESERVAS R
+JOIN
+    USUARIO U ON R.id_usuario = U.email;
 
-INSERT INTO RESERVAS (id, fecha, nombres)
+
+DELIMITER //
+
+CREATE PROCEDURE InsertReserva(
+    IN p_id VARCHAR(25),
+    IN p_fecha VARCHAR(50),
+    IN p_nombres VARCHAR(150),
+    IN p_id_usuario VARCHAR(150)
+)
+BEGIN
+    INSERT INTO RESERVAS(id, fecha, nombres, id_usuario)
+    VALUES (p_id, p_fecha, p_nombres, p_id_usuario);
+END;
+//
+
+CREATE PROCEDURE UpdateReserva(
+    IN p_id VARCHAR(25),
+    IN p_fecha VARCHAR(50),
+    IN p_nombres VARCHAR(150)
+)
+BEGIN
+    UPDATE RESERVAS
+    SET fecha = p_fecha,
+        nombres = p_nombres
+    WHERE id = p_id;
+END;
+//
+
+CREATE PROCEDURE DeleteReserva(
+    IN p_id VARCHAR(25)
+)
+BEGIN
+    DELETE FROM RESERVAS
+    WHERE id = p_id;
+END;
+//
+
+DELIMITER ;
+
+
+INSERT INTO RESERVAS (id, fecha, nombres, id_usuario)
 VALUES
-    ('reserva1', '2023-08-01', 'Reserva1'),
-    ('reserva2', '2023-08-02', 'Reserva2'),
-    ('reserva3', '2023-08-03', 'Reserva3'),
-    ('reserva4', '2023-08-04', 'Reserva4'),
-    ('reserva5', '2023-08-05', 'Reserva5'),
-    ('reserva6', '2023-08-06', 'Reserva6'),
-    ('reserva7', '2023-08-07', 'Reserva7'),
-    ('reserva8', '2023-08-08', 'Reserva8'),
-    ('reserva9', '2023-08-09', 'Reserva9'),
-    ('reserva10', '2023-08-10', 'Reserva10'),
-    ('reserva11', '2023-08-11', 'Reserva11'),
-    ('reserva12', '2023-08-12', 'Reserva12'),
-    ('reserva13', '2023-08-13', 'Reserva13'),
-    ('reserva14', '2023-08-14', 'Reserva14'),
-    ('reserva15', '2023-08-15', 'Reserva15');
-
-
-CREATE TABLE SOLICITUD_RESERVA (
-    id_usuario CHAR(150),
-    id_reserva CHAR(25),
-    PRIMARY KEY (id_usuario, id_reserva),
-    FOREIGN KEY (id_usuario) REFERENCES USUARIO(email),
-    FOREIGN KEY (id_reserva) REFERENCES RESERVAS(id)
-);
-INSERT INTO SOLICITUD_RESERVA (id_usuario, id_reserva)
-VALUES
-    ('msgalvez@espol.edu.ec', 'reserva1'),
-    ('kemeroca@espol.edu.ec', 'reserva2'),
-    ('jlopez@gmail.com', 'reserva3'),
-    ('mmartinez@hotmail.com', 'reserva4'),
-    ('acastillo@hotmail.com', 'reserva5'),
-    ('rfernandez@gmail.com', 'reserva6'),
-    ('mmontoya@espol.edu.ec', 'reserva7'),
-    ('jjimenez@espol.edu.ec', 'reserva8'),
-    ('cmorales@hotmail.com', 'reserva9'),
-    ('rsanchez@gmail.com', 'reserva10'),
-    ('jgonzalez@gmail.com', 'reserva11'),
-    ('faguilar@hotmail.com', 'reserva12'),
-    ('ecastro@espol.edu.ec', 'reserva13'),
-    ('jrodriguez@gmail.com', 'reserva14'),
-    ('mlopez@hotmail.com', 'reserva15');
+    ('reserva1', '2023-08-01', 'Reserva1', 'msgalvez@espol.edu.ec'),
+    ('reserva2', '2023-08-02', 'Reserva2', 'kemeroca@espol.edu.ec'),
+    ('reserva3', '2023-08-03', 'Reserva3', 'jlopez@gmail.com'),
+    ('reserva4', '2023-08-04', 'Reserva4', 'mmartinez@hotmail.com'),
+    ('reserva5', '2023-08-05', 'Reserva5', 'acastillo@hotmail.com'),
+    ('reserva6', '2023-08-06', 'Reserva6', 'rfernandez@gmail.com'),
+    ('reserva7', '2023-08-07', 'Reserva7', 'mmontoya@espol.edu.ec'),
+    ('reserva8', '2023-08-08', 'Reserva8', 'jjimenez@espol.edu.ec'),
+    ('reserva9', '2023-08-09', 'Reserva9', 'cmorales@hotmail.com'),
+    ('reserva10', '2023-08-10', 'Reserva10', 'rsanchez@gmail.com'),
+    ('reserva11', '2023-08-11', 'Reserva11', 'jgonzalez@gmail.com'),
+    ('reserva12', '2023-08-12', 'Reserva12', 'faguilar@hotmail.com'),
+    ('reserva13', '2023-08-13', 'Reserva13', 'ecastro@espol.edu.ec'),
+    ('reserva14', '2023-08-14', 'Reserva14', 'jrodriguez@gmail.com'),
+    ('reserva15', '2023-08-15', 'Reserva15', 'mlopez@hotmail.com');
 
 CREATE TABLE SERVICIO (
-    id CHAR(25) PRIMARY KEY,
-    nombre CHAR(150),
-    ubicacion CHAR(150),
-    sitioWeb CHAR(250),
+    id VARCHAR(25) PRIMARY KEY,
+    nombre VARCHAR(150),
+    ubicacion VARCHAR(150),
+    sitioWeb VARCHAR(250),
     tipo ENUM('HOTEL', 'THING')
 );
 
+CREATE UNIQUE INDEX idx_unique_nombre ON SERVICIO(nombre);
 
 INSERT INTO SERVICIO (id, nombre, ubicacion, sitioWeb, tipo)
 VALUES
@@ -149,16 +270,26 @@ VALUES
     ('servicio20', 'Visita Cristo Redentor', 'Río de Janeiro', 'www.visitacristoredentor.com', 'THING');
 
 CREATE TABLE OPINION (
-    id CHAR(25) PRIMARY KEY,
+    id VARCHAR(25) PRIMARY KEY,
     calificacion FLOAT,
-    fecha CHAR(50),
-    resena CHAR(255),
-    compania CHAR(150),
-    autor CHAR(150),
-    servicio_id CHAR(25),
+    fecha TIMESTAMP,
+    resena VARCHAR(255),
+    compania VARCHAR(150),
+    autor VARCHAR(150),
+    servicio_id VARCHAR(25),
     FOREIGN KEY (autor) REFERENCES USUARIO(email),
     FOREIGN KEY (servicio_id) REFERENCES SERVICIO(id)
 );
+
+DELIMITER //
+CREATE TRIGGER opinion_fecha_tgr
+BEFORE INSERT ON OPINION
+FOR EACH ROW
+BEGIN
+    SET NEW.fecha = NOW();
+END;
+//
+DELIMITER ;
 
 
 INSERT INTO OPINION (id, calificacion, fecha, resena, compania, autor, servicio_id)
@@ -191,10 +322,10 @@ VALUES
 
 
 CREATE TABLE THING_TO_DO (
-    servicio_id CHAR(25),
-    tipo CHAR(120),
+    servicio_id VARCHAR(25),
+    tipo VARCHAR(120),
     precio FLOAT,
-    duracion CHAR(10),
+    duracion VARCHAR(10),
     PRIMARY KEY (servicio_id),
     FOREIGN KEY (servicio_id) REFERENCES SERVICIO(id)
 );
@@ -215,8 +346,8 @@ VALUES
 
 
 CREATE TABLE HOTEL (
-    servicio_id CHAR(25) PRIMARY KEY,
-    telefono CHAR(20),
+    servicio_id VARCHAR(25) PRIMARY KEY,
+    telefono VARCHAR(20),
     incluyeDesayuno BOOLEAN,
     FOREIGN KEY (servicio_id) REFERENCES SERVICIO(id)
 );
@@ -233,12 +364,24 @@ VALUES
     ('servicio14', '222-333-4444', TRUE);
 
 CREATE TABLE LIKES (
-    usuario_id CHAR(150),
-    servicio_id CHAR(25),
+    usuario_id VARCHAR(150),
+    servicio_id VARCHAR(25),
+    fecha TIMESTAMP,
     PRIMARY KEY (usuario_id, servicio_id),
     FOREIGN KEY (usuario_id) REFERENCES USUARIO(email),
     FOREIGN KEY (servicio_id) REFERENCES SERVICIO(id)
 );
+
+
+DELIMITER //
+CREATE TRIGGER likes_fecha_tgr
+BEFORE INSERT ON LIKES
+FOR EACH ROW
+BEGIN
+    SET NEW.fecha = NOW();
+END;
+//
+DELIMITER ;
 
 INSERT INTO LIKES (usuario_id, servicio_id)
 VALUES

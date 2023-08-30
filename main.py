@@ -1,13 +1,7 @@
-# Implementar el CRUD por cada tabla principal de su diagrama lógico.
-# schema de la base de datos
-# SERVICIO
-# OPINION
-# THING_TO_DO
-# HOTEL
-# LIKES
+from reportes import numero_likes_servicio
 from reserva import (
-    Reserva,
-    ReservaModificada,
+    Reservas,
+    ReservasModificada,
     borrar_reserva,
     crear_reserva,
     editar_reserva,
@@ -37,7 +31,7 @@ def menu_usuarios():
         print("2. Mostrar usuarios")
         print("3. Editar Usuario")
         print("4. Borrar usuario")
-        print("5. Salir")
+        print("5. Atrás")
         choice = input("Selecciona una opción: ")
 
         if choice == "1":
@@ -78,7 +72,7 @@ def menu_vuelos():
         print("2. Mostrar vuelos")
         print("3. Editar vuelo")
         print("4. Borrar vuelo")
-        print("5. Salir")
+        print("5. Atrás")
         choice = input("Selecciona una opción: ")
 
         if choice == "1":
@@ -140,14 +134,15 @@ def menu_reservas():
         print("2. Mostrar reservas")
         print("3. Editar reserva")
         print("4. Borrar reserva")
-        print("5. Salir")
+        print("5. Atrás")
         choice = input("Selecciona una opción: ")
 
         if choice == "1":
             id = input("Id de la reserva: ")
             fecha = input("Fecha de la reserva: ")
             nombres = input("Nombres de la reserva: ")
-            nueva_reserva = Reserva(id, fecha, nombres)
+            id_usuario = input("Email del usuario: ")
+            nueva_reserva = Reservas(id, fecha, nombres, id_usuario)
             crear_reserva(nueva_reserva)
             print("Reserva añadida")
         elif choice == "2":
@@ -162,7 +157,7 @@ def menu_reservas():
             id = input("Id de la reserva: ")
             fecha = input("Fecha de la reserva: ")
             nombres = input("Nombres de la reserva: ")
-            reserva_mod = ReservaModificada(fecha, nombres)
+            reserva_mod = ReservasModificada(fecha, nombres)
             editar_reserva(id, reserva_mod)
             print("Reserva modificada")
         elif choice == "4":
@@ -173,14 +168,30 @@ def menu_reservas():
             break
 
 
-def main():
-    print("Indique que desea consultar o editar")
-    print("1. Usuarios")
-    print("2. Vuelos")
-    print("3. Reservas")
-    print("4. Salir")
-    choice = input("Selecciona una opción: ")
+def menu_reportes():
     while True:
+        print("1. Mostrar número de likes de un servicio")
+        print("2. Atrás")
+        choice = input("Selecciona una opción: ")
+
+        if choice == "1":
+            nombre = input("Nombre del servicio: ")
+            numero = numero_likes_servicio(nombre)
+            print(f"El servicio tiene {numero} likes")
+        elif choice == "2":
+            break
+
+
+def main():
+    while True:
+        print("Indique que desea consultar o editar")
+        print("1. Usuarios")
+        print("2. Vuelos")
+        print("3. Reservas")
+        print("4. Reportes")
+        print("5. Salir")
+        choice = input("Selecciona una opción: ")
+
         if choice == "1":
             menu_usuarios()
         elif choice == "2":
@@ -188,6 +199,8 @@ def main():
         elif choice == "3":
             menu_reservas()
         elif choice == "4":
+            menu_reportes()
+        elif choice == "5":
             print("¡Gracias!")
             break
 

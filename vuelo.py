@@ -26,17 +26,9 @@ class VueloModificado:
 
 def crear_vuelo(nuevo_vuelo: Vuelo):
     connection = connection_pool.get_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(prepared=True)
     cursor.execute(
-        """INSERT INTO VUELO (
-            numero,
-            areolinea,
-            destino,
-            origen,
-            fechaPartida,
-            fechaLlegada,
-            usuario
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+        "CALL InsertVuelo(%s, %s, %s, %s, %s, %s, %s)",
         (
             nuevo_vuelo.numero,
             nuevo_vuelo.areolinea,
@@ -90,22 +82,15 @@ def editar_vuelo(numero: int, vuelo_modificado: VueloModificado):
     connection = connection_pool.get_connection()
     cursor = connection.cursor(prepared=True)
 
-    update_query = """UPDATE VUELO SET
-                        areolinea = %s,
-                        destino = %s,
-                        origen = %s,
-                        fechaPartida = %s,
-                        fechaLlegada = %s,
-                        usuario = %s
-                    WHERE numero = %s"""
+    update_query = "CALL UpdateVuelo(%s,%s,%s,%s,%s,%s,%s)"
     values = (
+        numero,
         vuelo_modificado.areolinea,
         vuelo_modificado.destino,
         vuelo_modificado.origen,
         vuelo_modificado.fechaPartida,
         vuelo_modificado.fechaLlegada,
         vuelo_modificado.usuario,
-        numero,
     )
 
     cursor.execute(update_query, values)
@@ -117,9 +102,9 @@ def editar_vuelo(numero: int, vuelo_modificado: VueloModificado):
 
 def borrar_vuelo(numero: int):
     connection = connection_pool.get_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(prepared=True)
 
-    delete_query = "DELETE FROM VUELO WHERE numero = %s"
+    delete_query = "CALL DeleteVuelo(%s)"
     values = (numero,)
 
     cursor.execute(delete_query, values)
