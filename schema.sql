@@ -403,3 +403,84 @@ VALUES
     ('jrodriguez@gmail.com', 'servicio18'),
     ('mlopez@hotmail.com', 'servicio20'),
     ('pgarcia@gmail.com', 'servicio3');
+
+--PROCEDIMIENTOS
+--procedimiento 1
+DELIMITER //
+CREATE PROCEDURE OBTENER_USUAR(in nombres char(150)) BEGIN
+SELECT * FROM USUARIO u
+WHERE u.nombres = nombres; END
+// DELIMITER ;
+--procedimiento 2
+DELIMITER //
+CREATE PROCEDURE ClientePorReserva(in nombreservicio CHAR(150), OUT cliente CHAR(150))
+BEGIN
+SELECT u.nombres into cliente
+FROM USUARIO u JOIN likes l on u.email= l.usuario_id LEFT JOIN SERVICIO s on
+Tripadvisor
+   s.id=l.servicio_id
+WHERE s.nombre= nombreservicio;
+END
+// DELIMITER ;
+
+--procedimiento 3
+DELIMITER //
+CREATE PROCEDURE cuantasopiniones(in autornombre CHAR(150),out conteo INT) BEGIN
+SELECT COUNT(u.email) into conteo
+FROM usuario u JOIN OPINION o on u.email=o.autor WHERE u.nombres= autornombre;
+END
+// DELIMITER ;
+
+--procedimiento 4
+DELIMITER //
+CREATE PROCEDURE SPinsert(id CHAR(25),servicionuevo CHAR(150), ubic CHAR(150), sitio CHAR(250), tipo ENUM('HOTEL', 'THING'))
+BEGIN
+SET @nuevo=(SELECT s.nombre FROM servicio s WHERE s.nombre= servicionuevo); IF @nuevo='hotel' THEN
+INSERT INTO SERVICIO VALUES (id, servicionuevo, ubic, sitio, tipo); ELSE
+SIGNAL SQLSTATE '02000' SET MESSAGE_TEXT= 'Servicio no se puede
+agregar';
+END IF ;
+END
+// DELIMITER ;
+
+--VISTAS
+--Vista 1: Usuarios con Reservas Pendientes
+CREATE VIEW UsuariosConReservasPendientes AS
+SELECT U.email, U.nombres, U.apellidos
+FROM USUARIO U
+LEFT JOIN SOLICITUD_RESERVA SR ON U.email = SR.id_usuario
+LEFT JOIN OPINION O ON U.email = O.autor
+WHERE O.id IS NULL;
+
+--Vista 2: Hoteles con IncluyeDesayuno
+CREATE VIEW HotelesConIncluyeDesayuno AS
+SELECT S.nombre AS NombreHotel, S.ubicacion AS Ubicacion, H.telefono AS Telefono, H.incluyeDesayuno
+FROM SERVICIO S
+JOIN HOTEL H ON S.id = H.servicio_id
+WHERE S.tipo = 'HOTEL';
+
+
+
+
+--Vista 3: Reseñas de Servicios con Calificación Alta
+CREATE VIEW ResenasDeServiciosConCalificacionAlta AS
+SELECT O.calificacion, O.resena, O.compania, S.nombre AS NombreServicio, S.ubicacion AS Ubicacion
+FROM OPINION O
+JOIN SERVICIO S ON O.servicio_id = S.id
+WHERE O.calificacion >= 4;
+
+--Vista 4: Servicios más Gustados por Usuarios
+CREATE VIEW ServiciosMasGustados AS
+SELECT S.nombre AS NombreServicio, S.ubicacion AS Ubicacion, COUNT(L.servicio_id) AS MeGusta
+FROM SERVICIO S
+JOIN LIKES L ON S.id = L.servicio_id
+GROUP BY S.id
+ORDER BY MeGusta DESC;
+
+--INDICES
+
+CREATE UNIQUE INDEX idx_email ON USUARIO (email);
+CREATE INDEX idx_usuario ON VUELO (usuario);
+CREATE INDEX idx_servicio_id ON OPINION (servicio_id);
+CREATE UNIQUE INDEX idx_likes ON LIKES (usuario_id, servicio_id);
+CREATE UNIQUE INDEX idx_solicitud_reserva ON SOLICITUD_RESERVA (id_usuario, id_reserva);
